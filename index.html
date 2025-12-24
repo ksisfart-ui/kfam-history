@@ -6,35 +6,37 @@
     <title>暦ちひろDM履歴</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        .app-container { max-width: 600px; margin: 0 auto; min-height: 100vh; background: white; position: relative; }
-        .header { background-color: #335c7d; color: white; padding: 16px; font-weight: bold; position: sticky; top: 0; z-index: 10; }
+        body { background-color: #ffffff; font-family: -apple-system, "Helvetica Neue", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif; }
+        .app-container { max-width: 600px; margin: 0 auto; min-height: 100vh; }
+        .header { background-color: #335c7d; color: white; padding: 12px 16px; font-weight: bold; font-size: 1.1rem; }
         .hidden { display: none; }
-        /* Glide風のリストスタイル */
-        .list-item:active { background-color: #f0f0f0; }
+        /* リストの点の除去とスタイリング */
+        .list-item { border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; cursor: pointer; }
+        .list-item:active { background-color: #f5f5f5; }
+        /* チャットバブルの調整 */
+        .bubble { background-color: #f1f3f5; border-radius: 12px; padding: 12px 16px; display: inline-block; max-width: 85%; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <div class="header" id="app-header">暦ちひろDM履歴</div>
+    <div class="header">暦ちひろDM履歴</div>
 
     <div id="home-screen">
-        <div class="p-4 border-b bg-gray-50 font-bold text-gray-700">メッセージ</div>
-        <div id="group-list" class="divide-y">
-            <p class="p-4 text-gray-400">読み込み中...</p>
-        </div>
+        <div class="p-4 font-bold text-gray-700 bg-white">メッセージ</div>
+        <div id="group-list">
+            </div>
     </div>
 
     <div id="chat-screen" class="hidden">
-        <div class="p-2 border-b flex items-center bg-white sticky top-[56px] z-10">
-            <button onclick="showHome()" class="text-blue-500 p-2 flex items-center">
-                <span class="mr-1">＜</span> 戻る
+        <div class="p-3 flex items-center border-b sticky top-0 bg-white z-10">
+            <button onclick="showHome()" class="text-[#3b82f6] flex items-center text-lg">
+                <span class="text-2xl mr-1">＜</span> 戻る
             </button>
-            <span id="chat-title" class="ml-2 font-bold text-gray-800"></span>
+            <span id="chat-title" class="ml-4 font-bold text-gray-800 text-lg"></span>
         </div>
 
-        <div id="chat-content" class="p-4 space-y-6 bg-white min-h-screen pb-20">
+        <div id="chat-content" class="p-4 space-y-6">
             </div>
     </div>
 </div>
@@ -42,36 +44,32 @@
 <script>
     let allChatData = {};
 
-    // 1. JSONデータを読み込む
     async function loadData() {
         try {
-            const response = await fetch('data.json');
+            // キャッシュ回避のためにタイムスタンプを付与
+            const response = await fetch(`data.json?v=${new Date().getTime()}`);
             allChatData = await response.json();
             renderGroupList();
         } catch (error) {
-            console.error("データの読み込みに失敗しました:", error);
-            document.getElementById('group-list').innerHTML = '<p class="p-4 text-red-500">データの読み込みに失敗しました。</p>';
+            console.error("読み込み失敗:", error);
         }
     }
 
-    // 2. ホーム画面にグループ一覧を表示
     function renderGroupList() {
         const listContainer = document.getElementById('group-list');
         listContainer.innerHTML = '';
-
         Object.keys(allChatData).forEach(groupName => {
             const div = document.createElement('div');
-            div.className = 'list-item p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition-colors';
+            div.className = 'list-item';
             div.onclick = () => showChat(groupName);
             div.innerHTML = `
-                <span class="text-gray-800 font-medium">${groupName}</span>
-                <span class="text-gray-300">＞</span>
+                <span class="text-gray-800">${groupName}</span>
+                <span class="text-gray-300 text-xl font-light">＞</span>
             `;
             listContainer.appendChild(div);
         });
     }
 
-    // 3. チャット詳細画面を表示
     function showChat(groupName) {
         document.getElementById('home-screen').classList.add('hidden');
         document.getElementById('chat-screen').classList.remove('hidden');
@@ -81,33 +79,27 @@
         container.innerHTML = '';
 
         const messages = allChatData[groupName] || [];
-
         messages.forEach(msg => {
-            const div = document.createElement('div');
-            div.className = 'flex items-start space-x-3';
-            div.innerHTML = `
+            const wrap = document.createElement('div');
+            wrap.className = 'flex items-start space-x-3 mb-4';
+            wrap.innerHTML = `
                 <div class="w-10 h-10 rounded-full flex-shrink-0 ${msg.color || 'bg-gray-300'}"></div>
                 <div class="flex-1">
-                    <div class="text-[11px] text-gray-500 mb-1">${msg.name} ・ ${msg.date}</div>
-                    <div class="bg-gray-100 p-3 rounded-2xl rounded-tl-none text-sm text-gray-800 whitespace-pre-wrap leading-relaxed shadow-sm">
-                        ${msg.text}
-                    </div>
+                    <div class="text-[12px] text-gray-500 mb-1">${msg.name} ・ ${msg.date}</div>
+                    <div class="bubble text-[15px] text-gray-800 whitespace-pre-wrap">${msg.text}</div>
                 </div>
             `;
-            container.appendChild(div);
+            container.appendChild(wrap);
         });
-        window.scrollTo(0, 0); // 画面上部へスクロール
+        window.scrollTo(0, 0);
     }
 
-    // 4. ホームに戻る
     function showHome() {
         document.getElementById('home-screen').classList.remove('hidden');
         document.getElementById('chat-screen').classList.add('hidden');
     }
 
-    // 初期起動
     loadData();
 </script>
-
 </body>
 </html>
