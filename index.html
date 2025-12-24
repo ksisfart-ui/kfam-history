@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>暦ちひろDM履歴</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .app-container { max-width: 600px; margin: 0 auto; min-height: 100vh; background: white; position: relative; }
+        .header { background-color: #335c7d; color: white; padding: 16px; font-weight: bold; position: sticky; top: 0; z-index: 10; }
+        .hidden { display: none; }
+        /* Glide風のリストスタイル */
+        .list-item:active { background-color: #f0f0f0; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header" id="app-header">暦ちひろDM履歴</div>
+
+    <div id="home-screen">
+        <div class="p-4 border-b bg-gray-50 font-bold text-gray-700">メッセージ</div>
+        <div id="group-list" class="divide-y">
+            <p class="p-4 text-gray-400">読み込み中...</p>
+        </div>
+    </div>
+
+    <div id="chat-screen" class="hidden">
+        <div class="p-2 border-b flex items-center bg-white sticky top-[56px] z-10">
+            <button onclick="showHome()" class="text-blue-500 p-2 flex items-center">
+                <span class="mr-1">＜</span> 戻る
+            </button>
+            <span id="chat-title" class="ml-2 font-bold text-gray-800"></span>
+        </div>
+
+        <div id="chat-content" class="p-4 space-y-6 bg-white min-h-screen pb-20">
+            </div>
+    </div>
+</div>
+
+<script>
+    let allChatData = {};
+
+    // 1. JSONデータを読み込む
+    async function loadData() {
+        try {
+            const response = await fetch('data.json');
+            allChatData = await response.json();
+            renderGroupList();
+        } catch (error) {
+            console.error("データの読み込みに失敗しました:", error);
+            document.getElementById('group-list').innerHTML = '<p class="p-4 text-red-500">データの読み込みに失敗しました。</p>';
+        }
+    }
+
+    // 2. ホーム画面にグループ一覧を表示
+    function renderGroupList() {
+        const listContainer = document.getElementById('group-list');
+        listContainer.innerHTML = '';
+
+        Object.keys(allChatData).forEach(groupName => {
+            const div = document.createElement('div');
+            div.className = 'list-item p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition-colors';
+            div.onclick = () => showChat(groupName);
+            div.innerHTML = `
+                <span class="text-gray-800 font-medium">${groupName}</span>
+                <span class="text-gray-300">＞</span>
+            `;
+            listContainer.appendChild(div);
+        });
+    }
+
+    // 3. チャット詳細画面を表示
+    function showChat(groupName) {
+        document.getElementById('home-screen').classList.add('hidden');
+        document.getElementById('chat-screen').classList.remove('hidden');
+        document.getElementById('chat-title').innerText = groupName;
+
+        const container = document.getElementById('chat-content');
+        container.innerHTML = '';
+
+        const messages = allChatData[groupName] || [];
+
+        messages.forEach(msg => {
+            const div = document.createElement('div');
+            div.className = 'flex items-start space-x-3';
+            div.innerHTML = `
+                <div class="w-10 h-10 rounded-full flex-shrink-0 ${msg.color || 'bg-gray-300'}"></div>
+                <div class="flex-1">
+                    <div class="text-[11px] text-gray-500 mb-1">${msg.name} ・ ${msg.date}</div>
+                    <div class="bg-gray-100 p-3 rounded-2xl rounded-tl-none text-sm text-gray-800 whitespace-pre-wrap leading-relaxed shadow-sm">
+                        ${msg.text}
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+        window.scrollTo(0, 0); // 画面上部へスクロール
+    }
+
+    // 4. ホームに戻る
+    function showHome() {
+        document.getElementById('home-screen').classList.remove('hidden');
+        document.getElementById('chat-screen').classList.add('hidden');
+    }
+
+    // 初期起動
+    loadData();
+</script>
+
+</body>
+</html>
