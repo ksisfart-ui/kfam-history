@@ -62,6 +62,48 @@
         <div id="chat-content" class="p-4 space-y-6 min-h-screen">
             </div>
     </div>
+
+    <footer class="mt-10 p-6 bg-gray-50 text-gray-600 border-t border-gray-200">
+            <div class="max-w-md mx-auto">
+                <div class="border-l-4 border-[#335c7d] pl-3 mb-4">
+                    <h3 class="font-bold text-sm text-gray-800">このサイトについて</h3>
+                </div>
+
+                <ul class="text-[12px] leading-relaxed space-y-2 list-none">
+                    <li class="relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#335c7d]">
+                        本サイトは「ストグラ」および「暦家」を応援する非公式のファンアーカイブです。
+                    </li>
+                    <li class="relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#335c7d]">
+                        運営元および関係者様とは一切関係ございません。
+                    </li>
+                    <li class="relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#335c7d]">
+                        掲載内容に問題がある場合は、速やかに削除等の対応をいたします。
+                    </li>
+                </ul>
+
+                <div class="mt-6 pt-4 border-t border-gray-200 text-center text-[10px] text-gray-400">
+                    &copy; 2025 暦家アーカイブプロジェクト
+                </div>
+            </div>
+        </footer>
+    </div> ```
+
+    `.app-container` が短い時でもフッターが浮かないように、少しだけ CSS を調整します。`<style>` タグ内に以下を追加（または上書き）してください。
+
+    ```css
+    .app-container {
+        max-width: 600px;
+        margin: 0 auto;
+        min-height: 100vh;
+        background-color: white;
+        display: flex;       /* 追加 */
+        flex-direction: column; /* 追加 */
+    }
+
+    #home-screen, #chat-screen {
+        flex: 1; /* コンテンツ部分を伸ばしてフッターを下に押し下げる */
+    }
+
 </div>
 
 <script>
