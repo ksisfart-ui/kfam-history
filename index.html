@@ -7,25 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #f8f9fa; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
-        .app-container { max-width: 600px; margin: 0 auto; min-height: 100vh; background-color: white; }
-        .header { background-color: #335c7d; color: white; padding: 14px 16px; font-weight: bold; font-size: 1.1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .app-container { max-width: 600px; margin: 0 auto; min-height: 100vh; background-color: white; display: flex; flex-direction: column; }
+        .header { background-color: #335c7d; color: white; padding: 14px 16px; font-weight: bold; font-size: 1.1rem; flex-shrink: 0; }
         .hidden { display: none !important; }
 
-        /* リストの黒点を完全に消去 */
-        #group-list { list-style: none; padding: 0; margin: 0; }
+        /* リストスタイル */
         .list-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 18px 16px; /* 少し上下に余裕を持たせました */
-            border-bottom: 1px solid #f0f0f0;
-            transition: background 0.2s;
-            width: 100%; /* 横幅を確定させる */
-        }
-        /* 矢印を右端に固定するためのマージン調整 */
-        .list-item svg {
-            flex-shrink: 0;
-            margin-left: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px; border-bottom: 1px solid #f0f0f0; transition: background 0.2s;
         }
         .list-item:active { background-color: #f0f4f8; }
 
@@ -35,8 +24,11 @@
             display: inline-block; max-width: 85%; line-height: 1.5; color: #333;
         }
 
-        /* アイコン画像 */
         .user-icon { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background-color: #e9ecef; flex-shrink: 0; }
+
+        /* フッターリンク */
+        .footer-link { margin-top: auto; padding: 40px 16px 24px; text-align: center; }
+        .footer-link a { color: #999; font-size: 12px; text-decoration: underline; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -44,70 +36,59 @@
 <div class="app-container">
     <div class="header">暦ちひろDM履歴</div>
 
-    <div id="home-screen">
+    <div id="home-screen" class="content-view">
         <div class="p-4 font-bold text-gray-500 text-sm bg-gray-50 border-b">メッセージ</div>
         <div id="group-list">
             </div>
     </div>
 
-    <div id="chat-screen" class="hidden">
+    <div id="chat-screen" class="content-view hidden">
         <div class="p-2 border-b flex items-center bg-white sticky top-0 z-20">
-            <button onclick="showHome()" class="flex items-center text-[#007AFF] px-2 py-1 hover:opacity-70 transition">
+            <button onclick="showHome()" class="flex items-center text-[#007AFF] px-2 py-1">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                 <span class="text-[17px] ml-1">戻る</span>
             </button>
             <span id="chat-title" class="ml-4 font-bold text-gray-800 text-[17px]"></span>
         </div>
-
-        <div id="chat-content" class="p-4 space-y-6 min-h-screen">
-            </div>
+        <div id="chat-content" class="p-4 space-y-6"></div>
     </div>
 
-    <footer class="mt-10 p-6 bg-gray-50 text-gray-600 border-t border-gray-200">
-            <div class="max-w-md mx-auto">
-                <div class="border-l-4 border-[#335c7d] pl-3 mb-4">
-                    <h3 class="font-bold text-sm text-gray-800">このサイトについて</h3>
-                </div>
-
-                <ul class="text-[12px] leading-relaxed space-y-2 list-none">
-                    <li class="relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#335c7d]">
-                        本サイトは「ストグラ」および「暦家」を応援する非公式のファンアーカイブです。
-                    </li>
-                    <li class="relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#335c7d]">
-                        運営元および関係者様とは一切関係ございません。
-                    </li>
-                    <li class="relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#335c7d]">
-                        掲載内容に問題がある場合は、速やかに削除等の対応をいたします。
-                    </li>
-                </ul>
-
-                <div class="mt-6 pt-4 border-t border-gray-200 text-center text-[10px] text-gray-400">
-                    &copy; 2025 暦家アーカイブプロジェクト
-                </div>
+    <div id="about-screen" class="content-view hidden">
+        <div class="p-2 border-b flex items-center bg-white sticky top-0 z-20">
+            <button onclick="goBack()" class="flex items-center text-[#007AFF] px-2 py-1">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                <span class="text-[17px] ml-1">戻る</span>
+            </button>
+        </div>
+        <div class="p-6">
+            <div class="border-l-4 border-[#335c7d] pl-3 mb-6">
+                <h3 class="font-bold text-gray-800 text-lg">このサイトについて</h3>
             </div>
-        </footer>
-    </div> ```
+            <ul class="text-[14px] leading-relaxed space-y-4 text-gray-600">
+                <li class="relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#335c7d]">
+                    本サイトは「ストグラ」および「暦家」を応援する非公式のファンアーカイブです。
+                </li>
+                <li class="relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#335c7d]">
+                    運営元および関係者様とは一切関係ございません。
+                </li>
+                <li class="relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#335c7d]">
+                    掲載内容に問題がある場合は、速やかに削除等の対応をいたします。
+                </li>
+                <li class="relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#335c7d]">
+                    制作者：アド🍉<a href="https://x.com/admiral_splus" target="_blank" class="text-blue-500 underline">@admiral_splus</a>
+                </li>
+            </ul>
+        </div>
+    </div>
 
-    `.app-container` が短い時でもフッターが浮かないように、少しだけ CSS を調整します。`<style>` タグ内に以下を追加（または上書き）してください。
-
-    ```css
-    .app-container {
-        max-width: 600px;
-        margin: 0 auto;
-        min-height: 100vh;
-        background-color: white;
-        display: flex;       /* 追加 */
-        flex-direction: column; /* 追加 */
-    }
-
-    #home-screen, #chat-screen {
-        flex: 1; /* コンテンツ部分を伸ばしてフッターを下に押し下げる */
-    }
-
+    <div class="footer-link" id="common-footer">
+        <a onclick="showAbout()">このサイトについて</a>
+    </div>
 </div>
 
 <script>
     let allChatData = {};
+    let previousView = 'home-screen';
 
     async function loadData() {
         try {
@@ -126,33 +107,39 @@
             item.onclick = () => showChat(name);
             item.innerHTML = `
                 <span class="text-[17px] text-gray-800 font-medium">${name}</span>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b0b0b0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="9 18 15 12 9 6"></polyline>
-                </svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b0b0b0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
             `;
             list.appendChild(item);
         });
     }
 
-    function showChat(name) {
-        document.getElementById('home-screen').classList.add('hidden');
-        document.getElementById('chat-screen').classList.remove('hidden');
-        document.getElementById('chat-title').innerText = name;
+    function switchView(targetId) {
+        document.querySelectorAll('.content-view').forEach(view => view.classList.add('hidden'));
+        document.getElementById(targetId).classList.remove('hidden');
+        // About画面の時はフッターリンクを隠す
+        document.getElementById('common-footer').style.display = (targetId === 'about-screen') ? 'none' : 'block';
+        window.scrollTo(0, 0);
+    }
 
+    function showChat(name) {
+        previousView = 'home-screen';
         const container = document.getElementById('chat-content');
         container.innerHTML = '';
+        document.getElementById('chat-title').innerText = name;
 
         (allChatData[name] || []).forEach(msg => {
             const row = document.createElement('div');
             row.className = 'flex items-start space-x-3 mb-4';
-
-            // アイコン判定（画像があればimg、なければグレーの円）
             const iconHtml = msg.icon
-                ? `<img src="${msg.icon}" class="user-icon" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='">`
-                : `<div class="user-icon flex items-center justify-center text-[10px] text-gray-400">No Img</div>`;
-
-            row.innerHTML = `
-                ${iconHtml}
+                ? `<img src="${msg.icon}" class="user-icon">`
+                : `<div class="user-icon flex items-center justify-center text-[10px] text-gray-400 bg-gray-100">${msg.color ? '' : 'No Img'}</div>`;
+            if (msg.color && !msg.icon) {
+                // 色指定がある場合のアイコン
+                row.innerHTML = `<div class="user-icon ${msg.color}"></div>`;
+            } else {
+                row.innerHTML = iconHtml;
+            }
+            row.innerHTML += `
                 <div class="flex-1">
                     <div class="text-[11px] text-gray-400 mb-1 ml-1">${msg.name} ・ ${msg.date}</div>
                     <div class="bubble text-[15px]">${msg.text}</div>
@@ -160,13 +147,19 @@
             `;
             container.appendChild(row);
         });
-        window.scrollTo(0, 0);
+        switchView('chat-screen');
     }
 
-    function showHome() {
-        document.getElementById('home-screen').classList.remove('hidden');
-        document.getElementById('chat-screen').classList.add('hidden');
+    function showHome() { switchView('home-screen'); }
+
+    function showAbout() {
+        // 今の画面を覚えておく（戻るボタンのため）
+        const currentVisible = Array.from(document.querySelectorAll('.content-view')).find(v => !v.classList.contains('hidden'));
+        previousView = currentVisible ? currentVisible.id : 'home-screen';
+        switchView('about-screen');
     }
+
+    function goBack() { switchView(previousView); }
 
     loadData();
 </script>
