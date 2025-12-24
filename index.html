@@ -6,15 +6,27 @@
     <title>暦ちひろDM履歴</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #ffffff; font-family: -apple-system, "Helvetica Neue", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif; }
-        .app-container { max-width: 600px; margin: 0 auto; min-height: 100vh; }
-        .header { background-color: #335c7d; color: white; padding: 12px 16px; font-weight: bold; font-size: 1.1rem; }
-        .hidden { display: none; }
-        /* リストの点の除去とスタイリング */
-        .list-item { border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; cursor: pointer; }
-        .list-item:active { background-color: #f5f5f5; }
-        /* チャットバブルの調整 */
-        .bubble { background-color: #f1f3f5; border-radius: 12px; padding: 12px 16px; display: inline-block; max-width: 85%; }
+        body { background-color: #f8f9fa; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+        .app-container { max-width: 600px; margin: 0 auto; min-height: 100vh; background-color: white; }
+        .header { background-color: #335c7d; color: white; padding: 14px 16px; font-weight: bold; font-size: 1.1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .hidden { display: none !important; }
+
+        /* リストの黒点を完全に消去 */
+        #group-list { list-style: none; padding: 0; margin: 0; }
+        .list-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px; border-bottom: 1px solid #f0f0f0; transition: background 0.2s;
+        }
+        .list-item:active { background-color: #f0f4f8; }
+
+        /* チャットバブル */
+        .bubble {
+            background-color: #f1f3f5; border-radius: 18px; padding: 12px 16px;
+            display: inline-block; max-width: 85%; line-height: 1.5; color: #333;
+        }
+
+        /* アイコン画像 */
+        .user-icon { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background-color: #e9ecef; flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -23,20 +35,21 @@
     <div class="header">暦ちひろDM履歴</div>
 
     <div id="home-screen">
-        <div class="p-4 font-bold text-gray-700 bg-white">メッセージ</div>
+        <div class="p-4 font-bold text-gray-500 text-sm bg-gray-50 border-b">メッセージ</div>
         <div id="group-list">
             </div>
     </div>
 
     <div id="chat-screen" class="hidden">
-        <div class="p-3 flex items-center border-b sticky top-0 bg-white z-10">
-            <button onclick="showHome()" class="text-[#3b82f6] flex items-center text-lg">
-                <span class="text-2xl mr-1">＜</span> 戻る
+        <div class="p-2 border-b flex items-center bg-white sticky top-0 z-20">
+            <button onclick="showHome()" class="flex items-center text-[#007AFF] px-2 py-1 hover:opacity-70 transition">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                <span class="text-[17px] ml-1">戻る</span>
             </button>
-            <span id="chat-title" class="ml-4 font-bold text-gray-800 text-lg"></span>
+            <span id="chat-title" class="ml-4 font-bold text-gray-800 text-[17px]"></span>
         </div>
 
-        <div id="chat-content" class="p-4 space-y-6">
+        <div id="chat-content" class="p-4 space-y-6 min-h-screen">
             </div>
     </div>
 </div>
@@ -46,50 +59,52 @@
 
     async function loadData() {
         try {
-            // キャッシュ回避のためにタイムスタンプを付与
-            const response = await fetch(`data.json?v=${new Date().getTime()}`);
+            const response = await fetch(`data.json?v=${Date.now()}`);
             allChatData = await response.json();
             renderGroupList();
-        } catch (error) {
-            console.error("読み込み失敗:", error);
-        }
+        } catch (e) { console.error("Data load error", e); }
     }
 
     function renderGroupList() {
-        const listContainer = document.getElementById('group-list');
-        listContainer.innerHTML = '';
-        Object.keys(allChatData).forEach(groupName => {
-            const div = document.createElement('div');
-            div.className = 'list-item';
-            div.onclick = () => showChat(groupName);
-            div.innerHTML = `
-                <span class="text-gray-800">${groupName}</span>
-                <span class="text-gray-300 text-xl font-light">＞</span>
+        const list = document.getElementById('group-list');
+        list.innerHTML = '';
+        Object.keys(allChatData).forEach(name => {
+            const item = document.createElement('div');
+            item.className = 'list-item';
+            item.onclick = () => showChat(name);
+            item.innerHTML = `
+                <span class="text-[17px] text-gray-800 font-medium">${name}</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
             `;
-            listContainer.appendChild(div);
+            list.appendChild(item);
         });
     }
 
-    function showChat(groupName) {
+    function showChat(name) {
         document.getElementById('home-screen').classList.add('hidden');
         document.getElementById('chat-screen').classList.remove('hidden');
-        document.getElementById('chat-title').innerText = groupName;
+        document.getElementById('chat-title').innerText = name;
 
         const container = document.getElementById('chat-content');
         container.innerHTML = '';
 
-        const messages = allChatData[groupName] || [];
-        messages.forEach(msg => {
-            const wrap = document.createElement('div');
-            wrap.className = 'flex items-start space-x-3 mb-4';
-            wrap.innerHTML = `
-                <div class="w-10 h-10 rounded-full flex-shrink-0 ${msg.color || 'bg-gray-300'}"></div>
+        (allChatData[name] || []).forEach(msg => {
+            const row = document.createElement('div');
+            row.className = 'flex items-start space-x-3 mb-4';
+
+            // アイコン判定（画像があればimg、なければグレーの円）
+            const iconHtml = msg.icon
+                ? `<img src="${msg.icon}" class="user-icon" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='">`
+                : `<div class="user-icon flex items-center justify-center text-[10px] text-gray-400">No Img</div>`;
+
+            row.innerHTML = `
+                ${iconHtml}
                 <div class="flex-1">
-                    <div class="text-[12px] text-gray-500 mb-1">${msg.name} ・ ${msg.date}</div>
-                    <div class="bubble text-[15px] text-gray-800 whitespace-pre-wrap">${msg.text}</div>
+                    <div class="text-[11px] text-gray-400 mb-1 ml-1">${msg.name} ・ ${msg.date}</div>
+                    <div class="bubble text-[15px]">${msg.text}</div>
                 </div>
             `;
-            container.appendChild(wrap);
+            container.appendChild(row);
         });
         window.scrollTo(0, 0);
     }
