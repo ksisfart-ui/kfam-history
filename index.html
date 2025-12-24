@@ -8,25 +8,31 @@
     <style>
         body { background-color: #f8f9fa; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
         .app-container { max-width: 600px; margin: 0 auto; min-height: 100vh; background-color: white; }
-        .header { background-color: #335c7d; color: white; padding: 14px 16px; font-weight: bold; font-size: 1.1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header { background-color: #335c7d; color: white; padding: 14px 16px; font-weight: bold; font-size: 1.1rem; }
         .hidden { display: none !important; }
 
-        /* リストの黒点を完全に消去 */
-        #group-list { list-style: none; padding: 0; margin: 0; }
+        /* リストアイテムの修正 */
         .list-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 16px; border-bottom: 1px solid #f0f0f0; transition: background 0.2s;
+            display: flex;
+            flex-direction: row; /* 横並びを強制 */
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
         }
         .list-item:active { background-color: #f0f4f8; }
 
-        /* チャットバブル */
+        /* チャット表示の調整 */
         .bubble {
-            background-color: #f1f3f5; border-radius: 18px; padding: 12px 16px;
+            background-color: #f1f3f5; border-radius: 18px; padding: 10px 16px;
             display: inline-block; max-width: 85%; line-height: 1.5; color: #333;
         }
+        .user-icon { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .icon-placeholder { background-color: #e9ecef; display: flex; align-items: center; justify-content: center; text-size: 10px; color: #999; }
 
-        /* アイコン画像 */
-        .user-icon { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background-color: #e9ecef; flex-shrink: 0; }
+        /* 連続メッセージ用 */
+        .consecutive-msg { margin-top: -12px !important; }
     </style>
 </head>
 <body>
@@ -36,21 +42,18 @@
 
     <div id="home-screen">
         <div class="p-4 font-bold text-gray-500 text-sm bg-gray-50 border-b">メッセージ</div>
-        <div id="group-list">
-            </div>
+        <div id="group-list"></div>
     </div>
 
     <div id="chat-screen" class="hidden">
         <div class="p-2 border-b flex items-center bg-white sticky top-0 z-20">
-            <button onclick="showHome()" class="flex items-center text-[#007AFF] px-2 py-1 hover:opacity-70 transition">
+            <button onclick="showHome()" class="flex items-center text-[#007AFF] px-2 py-1">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                 <span class="text-[17px] ml-1">戻る</span>
             </button>
             <span id="chat-title" class="ml-4 font-bold text-gray-800 text-[17px]"></span>
         </div>
-
-        <div id="chat-content" class="p-4 space-y-6 min-h-screen">
-            </div>
+        <div id="chat-content" class="p-4 space-y-5 min-h-screen"></div>
     </div>
 </div>
 
@@ -62,7 +65,7 @@
             const response = await fetch(`data.json?v=${Date.now()}`);
             allChatData = await response.json();
             renderGroupList();
-        } catch (e) { console.error("Data load error", e); }
+        } catch (e) { console.error("Load error", e); }
     }
 
     function renderGroupList() {
@@ -80,31 +83,49 @@
         });
     }
 
-    function showChat(name) {
+    function showChat(groupName) {
         document.getElementById('home-screen').classList.add('hidden');
         document.getElementById('chat-screen').classList.remove('hidden');
-        document.getElementById('chat-title').innerText = name;
+        document.getElementById('chat-title').innerText = groupName;
 
         const container = document.getElementById('chat-content');
         container.innerHTML = '';
 
-        (allChatData[name] || []).forEach(msg => {
-            const row = document.createElement('div');
-            row.className = 'flex items-start space-x-3 mb-4';
+        const messages = allChatData[groupName] || [];
+        let lastSender = null;
+        let lastDate = null;
 
-            // アイコン判定（画像があればimg、なければグレーの円）
-            const iconHtml = msg.icon
-                ? `<img src="${msg.icon}" class="user-icon" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='">`
-                : `<div class="user-icon flex items-center justify-center text-[10px] text-gray-400">No Img</div>`;
+        messages.forEach(msg => {
+            const isConsecutive = (msg.name === lastSender && msg.date === lastDate);
+            const row = document.createElement('div');
+            row.className = `flex items-start space-x-3 ${isConsecutive ? 'consecutive-msg' : ''}`;
+
+            // アイコン判定ロジック
+            let iconHtml = '';
+            if (!isConsecutive) {
+                if (msg.icon) {
+                    iconHtml = `<img src="${msg.icon}" class="user-icon">`;
+                } else if (msg.name === "ちひろ") {
+                    iconHtml = `<div class="user-icon icon-placeholder text-[10px]">No Img</div>`;
+                } else {
+                    iconHtml = `<div class="user-icon ${msg.color || 'bg-gray-300'}"></div>`;
+                }
+            } else {
+                // 連続メッセージの場合はアイコン分のスペースだけ空ける
+                iconHtml = `<div class="w-10 flex-shrink-0"></div>`;
+            }
 
             row.innerHTML = `
                 ${iconHtml}
                 <div class="flex-1">
-                    <div class="text-[11px] text-gray-400 mb-1 ml-1">${msg.name} ・ ${msg.date}</div>
+                    ${!isConsecutive ? `<div class="text-[11px] text-gray-400 mb-1 ml-1">${msg.name} ・ ${msg.date}</div>` : ''}
                     <div class="bubble text-[15px]">${msg.text}</div>
                 </div>
             `;
             container.appendChild(row);
+
+            lastSender = msg.name;
+            lastDate = msg.date;
         });
         window.scrollTo(0, 0);
     }
