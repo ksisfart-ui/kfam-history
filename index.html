@@ -2,39 +2,47 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>暦ちひろDM履歴</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* 強力なリセット：全てのリストスタイルを強制的に消去 */
+        * { list-style: none !important; list-style-type: none !important; }
+
         body { background-color: #f8f9fa; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
         .app-container { max-width: 600px; margin: 0 auto; min-height: 100vh; background-color: white; display: flex; flex-direction: column; }
         .header { background-color: #335c7d; color: white; padding: 14px 16px; font-weight: bold; font-size: 1.1rem; flex-shrink: 0; }
+
         .hidden { display: none !important; }
 
-        /* リストスタイル */
+        /* リストアイテムの修正：絶対一行に収める設定 */
         .list-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 16px; border-bottom: 1px solid #f0f0f0; transition: background 0.2s;
+            display: flex !important;
+            flex-direction: row !important; /* 横並びを強制 */
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            width: 100%;
         }
         .list-item:active { background-color: #f0f4f8; }
+        .group-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .arrow-icon { flex-shrink: 0; margin-left: 12px; }
 
         /* チャットバブル */
-        .bubble {
-            background-color: #f1f3f5; border-radius: 18px; padding: 12px 16px;
-            display: inline-block; max-width: 85%; line-height: 1.5; color: #333;
-        }
-
+        .bubble { background-color: #f1f3f5; border-radius: 18px; padding: 12px 16px; display: inline-block; max-width: 85%; line-height: 1.5; color: #333; }
         .user-icon { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background-color: #e9ecef; flex-shrink: 0; }
 
         /* フッターリンク */
         .footer-link { margin-top: auto; padding: 40px 16px 24px; text-align: center; }
-        .footer-link a { color: #999; font-size: 12px; text-decoration: underline; cursor: pointer; }
+        .footer-link a { color: #999; font-size: 11px; text-decoration: underline; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <div class="header">暦ちひろDM履歴</div>
+    <div class="header" id="main-header">暦ちひろDM履歴</div>
 
     <div id="home-screen" class="content-view">
         <div class="p-4 font-bold text-gray-500 text-sm bg-gray-50 border-b">メッセージ</div>
@@ -64,20 +72,12 @@
             <div class="border-l-4 border-[#335c7d] pl-3 mb-6">
                 <h3 class="font-bold text-gray-800 text-lg">このサイトについて</h3>
             </div>
-            <ul class="text-[14px] leading-relaxed space-y-4 text-gray-600">
-                <li class="relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#335c7d]">
-                    本サイトは「ストグラ」および「暦家」を応援する非公式のファンアーカイブです。
-                </li>
-                <li class="relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#335c7d]">
-                    運営元および関係者様とは一切関係ございません。
-                </li>
-                <li class="relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#335c7d]">
-                    掲載内容に問題がある場合は、速やかに削除等の対応をいたします。
-                </li>
-                <li class="relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#335c7d]">
-                    制作者：<a href="https://x.com/admiral_splus" target="_blank" class="text-blue-500 underline">アド🍉</a> @admiral_splus
-                </li>
-            </ul>
+            <div class="text-[14px] leading-relaxed space-y-4 text-gray-600">
+                <p class="flex items-start"><span class="text-[#335c7d] mr-2">●</span>本サイトは「ストグラ」および「暦家」を応援する非公式のファンアーカイブです。</p>
+                <p class="flex items-start"><span class="text-[#335c7d] mr-2">●</span>運営元および関係者様とは一切関係ございません。</p>
+                <p class="flex items-start"><span class="text-[#335c7d] mr-2">●</span>掲載内容に問題がある場合は、速やかに削除等の対応をいたします。</p>
+                <p class="flex items-start"><span class="text-[#335c7d] mr-2">●</span>制作者：アド🍉 <a href="https://x.com/admiral_splus" target="_blank" class="text-blue-500 underline ml-1"></a>@admiral_splus</p>
+            </div>
         </div>
     </div>
 
@@ -95,7 +95,7 @@
             const response = await fetch(`data.json?v=${Date.now()}`);
             allChatData = await response.json();
             renderGroupList();
-        } catch (e) { console.error("Data load error", e); }
+        } catch (e) { console.error("Load error", e); }
     }
 
     function renderGroupList() {
@@ -106,8 +106,12 @@
             item.className = 'list-item';
             item.onclick = () => showChat(name);
             item.innerHTML = `
-                <span class="text-[17px] text-gray-800 font-medium">${name}</span>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b0b0b0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                <span class="group-name text-[17px] text-gray-800 font-medium">${name}</span>
+                <div class="arrow-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b0b0b0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </div>
             `;
             list.appendChild(item);
         });
@@ -116,7 +120,6 @@
     function switchView(targetId) {
         document.querySelectorAll('.content-view').forEach(view => view.classList.add('hidden'));
         document.getElementById(targetId).classList.remove('hidden');
-        // About画面の時はフッターリンクを隠す
         document.getElementById('common-footer').style.display = (targetId === 'about-screen') ? 'none' : 'block';
         window.scrollTo(0, 0);
     }
@@ -133,13 +136,14 @@
             const iconHtml = msg.icon
                 ? `<img src="${msg.icon}" class="user-icon">`
                 : `<div class="user-icon flex items-center justify-center text-[10px] text-gray-400 bg-gray-100">${msg.color ? '' : 'No Img'}</div>`;
+
+            let iconElement = iconHtml;
             if (msg.color && !msg.icon) {
-                // 色指定がある場合のアイコン
-                row.innerHTML = `<div class="user-icon ${msg.color}"></div>`;
-            } else {
-                row.innerHTML = iconHtml;
+                iconElement = `<div class="user-icon ${msg.color}"></div>`;
             }
-            row.innerHTML += `
+
+            row.innerHTML = `
+                ${iconElement}
                 <div class="flex-1">
                     <div class="text-[11px] text-gray-400 mb-1 ml-1">${msg.name} ・ ${msg.date}</div>
                     <div class="bubble text-[15px]">${msg.text}</div>
@@ -151,14 +155,11 @@
     }
 
     function showHome() { switchView('home-screen'); }
-
     function showAbout() {
-        // 今の画面を覚えておく（戻るボタンのため）
-        const currentVisible = Array.from(document.querySelectorAll('.content-view')).find(v => !v.classList.contains('hidden'));
-        previousView = currentVisible ? currentVisible.id : 'home-screen';
+        const current = Array.from(document.querySelectorAll('.content-view')).find(v => !v.classList.contains('hidden'));
+        previousView = current ? current.id : 'home-screen';
         switchView('about-screen');
     }
-
     function goBack() { switchView(previousView); }
 
     loadData();
